@@ -33,5 +33,25 @@
         "payer": "john",
         "amount": "1",
         "receiver": "liyang"
+    },
+    {
+        "payer": "liyang",
+        "amount": "1",
+        "receiver": "rentong"
+    },
+    {
+        "payer": "liyang",
+        "amount": "1.11",
+        "receiver": "john"
+    },
+    {
+        "payer": "mine",
+        "amount": 10,
+        "receiver": "john"
+    },
+    {
+        "payer": "john",
+        "amount": "1",
+        "receiver": "liyang"
     }
 ]

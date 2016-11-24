@@ -13,8 +13,8 @@ console.log('Server listening on port 3000');
 // Socket.IO part
 var io = require('socket.io')(server);
 
-var sendTransactions = function (socket) {
-	fs.readFile('_transactions.json', 'utf8', function(err, transactions) {
+var sendTransactions = function (socket, user) {
+	fs.readFile('_ledger_' + user + '.json', 'utf8', function(err, transactions) {
 		transactions = JSON.parse(transactions);
 		socket.emit('transactions', transactions);
 	});
@@ -47,7 +47,8 @@ var mine = function (socket, user, callback) {
 				if (err) {
 					console.log("Are you kidding me. You don't even have a ledger.");
 				} else {
-					transactions = JSON.parse(transactions);
+					transactions = transactions === '' ? [] : JSON.parse(transactions);
+					transactions.push({payer: 'mine', amount: '10', receiver: user});
 					transactions = transactions.concat(newTransactions);
 					fs.writeFile('_ledger_' + user + '.json', JSON.stringify(transactions, null, 4), function (err) {
 						callback(err);
@@ -62,11 +63,16 @@ var mine = function (socket, user, callback) {
 	});
 };
 
+var processLogin = function(socket, login, callback){
+	console.log(login);
+	socket.emit('success');
+};
+
 io.on('connection', function (socket) {
   console.log('New client connected!');
 
-	socket.on('fetchTransactions', function () {
-		sendTransactions(socket);
+	socket.on('fetchTransactions', function (user) {
+		sendTransactions(socket, user);
 	});
 
 	socket.on('fetchBalance', function (user) {
@@ -75,6 +81,11 @@ io.on('connection', function (socket) {
 
 	socket.on('mineRequest', function (user, callback) {
 		mine(socket, user, callback);
+	});
+
+	socket.on('loginRequest', function (login, callback) {
+		console.log('login requested');
+		processLogin(socket, login, callback);
 	});
 
 	socket.on('newTransaction', function (transaction, callback) {
@@ -92,8 +103,7 @@ io.on('connection', function (socket) {
 					callback(err);
 				});
 			} else {
-				transactions = transactions === '' ? '[]' : transactions;
-				transactions = JSON.parse(transactions);
+				transactions = transactions === '' ? [] : JSON.parse(transactions);
 				transactions.push(transaction);
 				fs.writeFile('_transactions_john.json', JSON.stringify(transactions, null, 4), function (err) {
 					io.emit('transactions', transactions);

@@ -12,7 +12,7 @@ module.exports = {
   },
   output: {
     path: './app',
-    filename: 'bundle.js',
+    filename: 'bundle2.js',
     libraryTarget: 'var',
     library: 'fmlib'
   },

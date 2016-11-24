@@ -1,8 +1,10 @@
-import TextField from 'material-ui/TextField';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import TextField from 'material-ui/TextField';
+import RaisedButton from 'material-ui/RaisedButton';
 
-var TransactionBox = React.createClass({
+var MyApp = React.createClass({
 	getInitialState: function () {
 		return {
 			transactions: null,
@@ -16,6 +18,14 @@ var TransactionBox = React.createClass({
 			that.setState({ balance: balance });
 		});
 		this.socket.emit('fetchBalance', 'liyang');
+	},
+	fetchTransactions: function (user) {
+		var that = this;
+		this.socket = io();
+		this.socket.on('transactions', function (transactions) {
+			that.setState({ transactions: transactions });
+		});
+		this.socket.emit('fetchTransactions', user);
 	},
 	submitTransaction: function (transaction, callback) {
 		this.socket.emit('newTransaction', transaction, function (err) {
@@ -33,29 +43,16 @@ var TransactionBox = React.createClass({
 	},
 	render: function() {
 		return (
-			<div className="transactionBox">
-					<h3>Balance:</h3>
-					<Balance balance={this.state.balance}/>
-					<h3>Transactions:</h3>
-					<TransactionList transactions={this.state.transactions}/>
-					<TransactionForm submitTransaction={this.submitTransaction}/>
-					<Mine mine={this.onMineRequest}/>
-			</div>
-		);
-	}
-});
-var TransactionList = React.createClass({
-	render: function () {
-		var Transactions = (<div>Loading transactions...</div>);
-		if (this.props.transactions) {
-			Transactions = this.props.transactions.map(function (transaction) {
-				return (<Transaction transaction={transaction} />);
-			});
-		}
-		return (
-			<div className="transactionList">
-				{Transactions}
-			</div>
+			<MuiThemeProvider>
+				<div className="transactionBox">
+						<h3>Balance:</h3>
+						<Balance balance={this.state.balance}/>
+						<h3>Transactions:</h3>
+						<TransactionList transactions={this.state.transactions} fetchTransactions={this.fetchTransactions}/>
+						<TransactionForm submitTransaction={this.submitTransaction}/>
+						<Mine mine={this.onMineRequest}/>
+				</div>
+		  </MuiThemeProvider>
 		);
 	}
 });
@@ -72,65 +69,141 @@ var Transaction = React.createClass({
 	render: function () {
 		return (
 			<div className="transaction">
-				<span className="payer">{this.props.transaction.payer}</span> paid:<br/>
-				<span className="amount">{this.props.transaction.amount}</span> to <br/>
-				<span className="receiver">{this.props.transaction.receiver}</span> <br/>
+				<span className="payer">{this.props.transaction.payer}</span> paid:
+				<span className="amount">{this.props.transaction.amount}</span> to 
+				<span className="receiver">{this.props.transaction.receiver}</span> 
 			</div>
 		);
 	}
 });
 var TransactionForm = React.createClass({
+	getInitialState: function () {
+		return {
+			payer: '',
+			amount: '',
+			receiver: '',
+			buttonDisabled: false
+		};
+	},
 	handleSubmit: function (e) {
 		e.preventDefault();
 		var that = this;
-		var payer = this.refs.payer.getDOMNode().value;
-		var amount = this.refs.amount.getDOMNode().value;
-		var receiver = this.refs.receiver.getDOMNode().value;
+		var payer = this.refs.payer.getValue();
+		var amount = this.refs.amount.getValue();
+		var receiver = this.refs.receiver.getValue();
 		var transaction = { payer: payer, amount: amount, receiver: receiver};
-		var submitButton = this.refs.submitButton.getDOMNode();
-		submitButton.innerHTML = 'Posting transaction...';
-		submitButton.setAttribute('disabled', 'disabled');
+		var submitButton = this.refs.submitButton;
+		submitButton.setState({buttonDisabled:true});
 		this.props.submitTransaction(transaction, function (err) {
-			that.refs.payer.getDOMNode().value = '';
-			that.refs.amount.getDOMNode().value = '';
-			that.refs.receiver.getDOMNode().value = '';
-			submitButton.innerHTML = 'Post transaction';
-			submitButton.removeAttribute('disabled');
+			that.setState({payer:''})
+			that.setState({amount:''})
+			that.setState({receiver:''})
+			submitButton.setState({buttonDisabled:false});
 		});
+	},
+	handlePayerChange: function (event) {
+	    event.preventDefault();
+	    this.setState({
+	      payer: event.target.value,
+	    });
+	},
+	handleAmountChange: function (event) {
+	    event.preventDefault();
+	    this.setState({
+	      amount: event.target.value,
+	    });
+	},
+	handleReceiverChange: function (event) {
+	    event.preventDefault();
+	    this.setState({
+	      receiver: event.target.value,
+	    });
 	},
 	render: function () {
 		return (
 			<form className="transactionForm" onSubmit={this.handleSubmit}>
-				<input type="text" name="payer" ref="payer" placeholder="Payer" required /><br/>
-				<input type="number" step="any" name="amount" ref="amount" placeholder="Amount" required /><br/>
-				<input type="text" name="receiver" ref="receiver" placeholder="Receiver" required /><br/>
-				<button type="submit" ref="submitButton">Post transaction</button>
+				<TextField
+					floatingLabelText="payer" ref="payer" value={this.state.payer} onChange={this.handlePayerChange}
+				/><br />
+				<TextField
+					floatingLabelText="amount" ref="amount" value={this.state.amount} onChange={this.handleAmountChange}
+				/><br />
+				<TextField
+					floatingLabelText="receiver" ref="receiver" value={this.state.receiver} onChange={this.handleReceiverChange}
+				/><br />
+				<RaisedButton label="Post transaction" type="submit" ref="submitButton" disabled={this.state.buttonDisabled}/>
 			</form>
 		);
 	}
 });
 var Mine = React.createClass({
+	getInitialState: function () {
+		return {
+			buttonDisabled: false
+		};
+	},
 	handleSubmit: function (e) {
 		e.preventDefault();
-		var that = this;
-		var submitButton = this.refs.mineButton.getDOMNode();
-		submitButton.innerHTML = 'Mining...';
-		submitButton.setAttribute('disabled', 'disabled');
+		var submitButton = this.refs.mineButton;
+		submitButton.setState({buttonDisabled: true})
 		this.props.mine('john', function (err) {
-			submitButton.innerHTML = 'Mine';
-			submitButton.removeAttribute('disabled');
+			submitButton.setState({buttonDisabled: false})
 		});
 	},
 	render: function () {
 		return (
 			<form className="mineForm" onSubmit={this.handleSubmit}>
-				<button type="submit" ref="mineButton">Mine</button>
+				<RaisedButton 
+				    label="Mine" 
+				    type="submit" 
+				    ref="mineButton" 
+				    disabled={this.state.buttonDisabled}
+				    primary={true}
+				    />
 			</form>
 		);
 	}
 });
-alert('rendered');
+var TransactionList = React.createClass({
+	getInitialState: function () {
+		return {
+			buttonDisabled: false
+		};
+	},
+	handleSubmit: function (e) {
+		e.preventDefault();
+		var submitButton = this.refs.transactionButton;
+		submitButton.setState({buttonDisabled: true});
+		this.props.fetchTransactions('john', function (err) {
+			submitButton.setState({buttonDisabled: false});
+			submitButton.setState({label: "Hide Transactions"});
+		});
+	},
+	render: function () {
+		var Transactions = (<div/>);
+		if (this.props.transactions) {
+			Transactions = this.props.transactions.map(function (transaction) {
+				return (<Transaction transaction={transaction} />);
+			});
+		}
+		return (
+			<div className="transactionList">
+				<form className="transactionForm" onSubmit={this.handleSubmit}>
+					<RaisedButton 
+					    label="Load Transactions"
+					    type="submit" 
+					    ref="transactionButton" 
+					    disabled={this.state.buttonDisabled}
+					    primary={true}
+					    />
+				</form>
+				{Transactions}
+			</div>
+		);
+	}
+});
+
 ReactDOM.render(
-	<TransactionBox/>,
+	<MyApp/>,
 	document.getElementById('content')
 );
