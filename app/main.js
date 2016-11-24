@@ -1,3 +1,7 @@
+import TextField from 'material-ui/TextField';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 var TransactionBox = React.createClass({
 	getInitialState: function () {
 		return {
@@ -30,12 +34,12 @@ var TransactionBox = React.createClass({
 	render: function() {
 		return (
 			<div className="transactionBox">
-				<h3>Balance:</h3>
-				<Balance balance={this.state.balance}/>
-				<h3>Transactions:</h3>
-				<TransactionList transactions={this.state.transactions}/>
-				<TransactionForm submitTransaction={this.submitTransaction}/>
-				<Mine mine={this.onMineRequest}/>
+					<h3>Balance:</h3>
+					<Balance balance={this.state.balance}/>
+					<h3>Transactions:</h3>
+					<TransactionList transactions={this.state.transactions}/>
+					<TransactionForm submitTransaction={this.submitTransaction}/>
+					<Mine mine={this.onMineRequest}/>
 			</div>
 		);
 	}
@@ -112,7 +116,7 @@ var Mine = React.createClass({
 		var submitButton = this.refs.mineButton.getDOMNode();
 		submitButton.innerHTML = 'Mining...';
 		submitButton.setAttribute('disabled', 'disabled');
-		this.props.mine('liyang', function (err) {
+		this.props.mine('john', function (err) {
 			submitButton.innerHTML = 'Mine';
 			submitButton.removeAttribute('disabled');
 		});
@@ -125,8 +129,8 @@ var Mine = React.createClass({
 		);
 	}
 });
-
-React.render(
+alert('rendered');
+ReactDOM.render(
 	<TransactionBox/>,
 	document.getElementById('content')
 );

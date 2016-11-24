@@ -1,0 +1,22 @@
+[
+    {
+        "payer": "john",
+        "amount": "1",
+        "receiver": "liyang"
+    },
+    {
+        "payer": "john",
+        "amount": "0.12",
+        "receiver": "liyang"
+    },
+    {
+        "payer": "liyang",
+        "amount": "0.01",
+        "receiver": "john"
+    },
+    {
+        "payer": "john",
+        "amount": "0.01",
+        "receiver": "liyang"
+    }
+]

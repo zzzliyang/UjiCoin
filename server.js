@@ -25,9 +25,9 @@ var calculateBalance = function (socket, user) {
 		transactions = JSON.parse(transactions);
 		var balance = 0;
 		_.each(transactions, function(transaction) {
-		  if (transaction.payer === 'liyang') {
+		  if (transaction.payer === 'john') {
 				balance -= parseFloat(transaction.amount);
-			}	else if (transaction.receiver === 'liyang') {
+			}	else if (transaction.receiver === 'john') {
 				balance += parseFloat(transaction.amount);
 			}
 		});
@@ -78,23 +78,24 @@ io.on('connection', function (socket) {
 	});
 
 	socket.on('newTransaction', function (transaction, callback) {
-		fs.readFile('_transactions_liyang.json', 'utf8', function(err, transactions) {
+		fs.readFile('_transactions_john.json', 'utf8', function(err, transactions) {
 			if (err) {
-				fs.writeFile('_transactions_liyang.json', '', function(err) {
+				fs.writeFile('_transactions_john.json', '', function(err) {
           if(err) {
               console.log(err);
           }
           console.log("The file was saved!");
       	});
 				var transactions = [transaction];
-				fs.writeFile('_transactions_liyang.json', JSON.stringify(transactions, null, 4), function (err) {
+				fs.writeFile('_transactions_john.json', JSON.stringify(transactions, null, 4), function (err) {
 					io.emit('transactions', transactions);
 					callback(err);
 				});
 			} else {
+				transactions = transactions === '' ? '[]' : transactions;
 				transactions = JSON.parse(transactions);
 				transactions.push(transaction);
-				fs.writeFile('_transactions_liyang.json', JSON.stringify(transactions, null, 4), function (err) {
+				fs.writeFile('_transactions_john.json', JSON.stringify(transactions, null, 4), function (err) {
 					io.emit('transactions', transactions);
 					callback(err);
 				});

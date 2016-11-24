@@ -2,6 +2,7 @@ body {
 	background: #ddd;
 	padding: 0;
 	margin: 0;
+	height: auto;
 }
 
 #content {
@@ -31,4 +32,23 @@ body {
 	margin-bottom: 5px;
 	border: 1px #ddd solid;
 	padding: 5px;
+}
+
+
+.simple {
+  width: 500px;
+  margin: 20px auto;
+}
+
+.fancy {
+  background-color: blue;
+	position: relative;
+  top: auto;
+  width: auto;
+  height: auto;
+}
+
+article img {
+  float: right;
+  width: 50%;
 }
